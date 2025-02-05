@@ -19,6 +19,15 @@ const choices: Record<Choice, string> = {
   scissors: '/images/scissors.png'
 };
 
+const getSocketUrl = () => {
+  if (process.env.NEXT_PUBLIC_WEBSOCKET_URL) {
+    return process.env.NEXT_PUBLIC_WEBSOCKET_URL;
+  }
+  return process.env.NODE_ENV === 'production' 
+    ? window.location.origin 
+    : 'http://localhost:3000';
+};
+
 export default function GameBoard({ mode, onBack, roomId }: Props) {
   const [score, setScore] = useState({ player: 0, opponent: 0 });
   const [isAnimating, setIsAnimating] = useState(false);
@@ -32,7 +41,9 @@ export default function GameBoard({ mode, onBack, roomId }: Props) {
 
   useEffect(() => {
     if (mode === 'friend' && roomId) {
-      const newSocket = io();
+      const newSocket = io(getSocketUrl(), {
+        path: '/api/socketio',
+      });
       setSocket(newSocket);
 
       newSocket.emit('joinRoom', roomId);
